@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+        ebook:
+             build: .
+             container_name: fs-s1-cp2-CRUD
+             image: registry.mejik.xyz/ebook/fs-s1-cp2-CRUD
+             ports:
+                     - 3026:3000
