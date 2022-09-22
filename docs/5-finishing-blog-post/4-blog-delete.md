@@ -6,71 +6,97 @@ sidebar_position: 4
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-Hal pertama yang kita lakukan adalah menambahkan id blog yang akan dihapus pada file `blog.hbs` bagian `tag anchor` button delete. Hal ini bertujuan untuk nantinya pada route delete dapat menerima id blog mana yang akan hapus dari database.
+Hal pertama yang kita lakukan adalah menambahkan id blog yang akan dihapus pada file `blog.html` bagian `tag anchor` button delete. Hal ini bertujuan untuk nantinya pada route delete dapat menerima id blog mana yang akan hapus dari database.
 
-<a class="btn-example-code" href="https://github.com/demo-dumbways/ebook-code-result-chapter-2/blob/day5-3.delete-blog-sql/views/blog.hbs">
+<a class="btn-example-code" href="">
 Contoh code
 </a>
 
 <br />
 <br />
 
-```html title=blog.hbs {9}
-{{#each blogs}}
+```html title=blog.html {18}
+<div id="contents" class="blog-list">
+    <!-- conditional post blog -->
+    {{if .Data.IsLogin}}
+    <div class="button-group w-100">
+      <a href="/add-blog" class="btn-post">Add New Blog</a>
+    </div>
+    {{end}}
+    <!-- dynamic content would be here -->
+    {{range $index, $data := .Blogs}}
     <div class="blog-list-item">
       <div class="blog-image">
         <img src="/public/assets/blog-img.png" alt="Pasar Coding di Indonesia Dinilai Masih Menjanjikan" />
       </div>
       <div class="blog-content">
+        {{if $data.IsLogin}}
         <div class="button-group">
           <a class="btn-edit">Edit Post</a>
-          <a href="/delete-blog/{{this.id}}" class="btn-post">Delete Blog</a>
+          <a class="btn-post" href="/delete-blog/{{$data.Id}}">Delete Blog</a>
         </div>
+        {{end}}
         <h1>
-          <a href="/blog/{{this.id}}" target="_blank">{{this.title}}</a>
+          <a href="/blog/{{$data.Id}}" target="_blank">
+            {{$data.Title}}
+          </a>
         </h1>
         <div class="detail-blog-content">
-          {{this.post_date}} | {{this.author}}
+          {{$data.Format_date}} | {{$data.Author}}
         </div>
-        <p>{{this.content}}</p>
+        <p>
+          {{$data.Content}}
+        </p>
       </div>
     </div>
-{{/each}}
+    {{end}}
+  </div>
 ```
-Kita akan menambahkan sebuah route baru pada file `index.js`. Route kita berikan endpoint `delete-blog/:id`, sesuai dengan tujuannya yakni menghapus data blog dari database. Query yang akan digunakan untuk menghapus data yakni `DELETE`.
 
-<a class="btn-example-code" href="https://github.com/demo-dumbways/ebook-code-result-chapter-2/blob/day5-3.delete-blog-sql/api/index.js">
+Pada endpoint `delete-blog/{id}` kita akan melakukan proses menghapus data blog, sesuai dengan tujuannya yakni menghapus data blog dari database. Query yang akan digunakan untuk menghapus data yakni `DELETE`.
+
+<a class="btn-example-code" href="">
 Contoh code
 </a>
 
 <br />
 <br />
 
-```js title=index.js {3-16}
-// this code below endpoint app.post('/blog', .....
+```go title=main.go {9-14}
+// continuation this code same like before
+// this code below func addBlog(w http.ResponseWriter, r *http.Request) { .....
 
-app.get('/delete-blog/:id', function (req, res) {
-    let id = req.params.id
-    let query = `DELETE FROM blog WHERE id = ${id}`
+func deleteBlog(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-    setHeader(res)
-    db.connect(function (err, client, done) {
-        done()
-        if (err) throw err
-        client.query(query, function (err, result) {
-            if (err) throw err
-            res.redirect('/blog')
-        })
-    })
-})
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
 
-app.get('/contact-me', function (req, res) {
-    setHeader(res)
-    res.render('contact')
-})
+	_, err := connection.Conn.Exec(context.Background(), "DELETE FROM blog WHERE id=$1", id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("message : " + err.Error()))
+		return
+	}
+
+	http.Redirect(w, r, "/blog", http.StatusMovedPermanently)
+}
+
+func contactMe(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	var tmpl, err = template.ParseFiles("views/contact.html")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("message : " + err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	tmpl.Execute(w, Data)
+}
 ```
 
-Mengambil index yang dikirim, kita gunakan `req.params.index`, jadi index tersebut tersimpan didalam `req.params`. Selanjutnya id yang kita dapatkan akan menjadi kondisi pada query yang dijalankan. Kondisi yang dimaksud yakni hanya menghapus data blog yang id nya sama dengan id yang dikirimkan.
+Mengambil id yang dikirim, kita gunakan `mux.Vars(r)["id"]`, jadi id tersebut tersimpan didalam `mux.Vars(r)`. Selanjutnya id yang kita dapatkan akan menjadi kondisi pada query yang dijalankan. Kondisi yang dimaksud yakni hanya menghapus data blog yang id nya sama dengan id yang dikirimkan.
 
 Sebenarnya penulisan query yang digunakan bisa kita `simpan kedalam sebuah variabel` terlebih dahulu seperti endpoint delete ini, ataupun `langsung dituliskan` seperti yang dituliskan pada endpoint detail blog dan blog post.
 
@@ -80,7 +106,7 @@ Sebenarnya penulisan query yang digunakan bisa kita `simpan kedalam sebuah varia
 <br />
 
 <div>
-<a class="btn-demo" href="https://personal-web-chapter-2.herokuapp.com/blog">
+<a class="btn-demo" href="">
 Demo
 </a>
 </div>

@@ -8,46 +8,40 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 Pada pertemuan kedua kita telah membuat sebuah route menggunakan metode `POST` dengan nama endpoint `blog` untuk menyimpan data inputan dari formulir blog. Hanya saja pada pertemuan tersebut kita masih sebatas menyimpan data pada variabel. Kali ini kita akan menyimpan data kedalam database menggunakan `query INSERT`.
 
-<a class="btn-example-code" href="https://github.com/demo-dumbways/ebook-code-result-chapter-2/blob/day5-2.blog-post-sql/api/index.js">
+<a class="btn-example-code" href="">
 Contoh code
 </a>
 
 <br />
 <br />
 
-```js title=index.js {6-19}
-app.get('/add-blog', function (req, res) {
-    setHeader(res)
-    res.render("form-blog")
-})
+```go title=main.go {13-18}
+// continuation this code same like before
+// this code below func formBlog(w http.ResponseWriter, r *http.Request) { .......
 
-app.post('/blog', function (req, res) {
-    let data = req.body
+func addBlog(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    let query = `INSERT INTO blog(title, content, image) VALUES ('${data.title}', '${data.content}', 'image.png')`
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
 
-    db.connect(function (err, client, done) {
-        if (err) throw err
+	_, err = connection.Conn.Exec(context.Background(), "INSERT INTO blog(title, content,image) VALUES ($1,$2,'image.png')", title, content)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("message : " + err.Error()))
+		return
+	}
 
-        client.query(query, function (err, result) {
-            if (err) throw err
-            res.redirect('/blog')
-        })
-    })
-})
+	http.Redirect(w, r, "/blog", http.StatusMovedPermanently)
+}
 
-app.get('/delete-blog/:index', (req, res) => {
-    const index = req.params.index;
-
-    blogs.splice(index, 1);
-
-    setHeader(res)
-    res.redirect('/blog');
-});
-
+// continuation this code same like before
 ```
 
-Pada saat memasukkan data inputan yang kita terima kedalam database, maka kita perlu mespesifikkan column mana saja yang akan kita inputkan. Pada study case kali ini, kita belum menangani terkait `file upload`. Hal tersebut belum dilakukan karena membutuhkan package tambahan dengan nama `Multer` yang nantinya akan kita bahas pada pertemuan Day 7 terkait `PostgreSQL Relation and File Upload in Node JS`. Sehingga pada case kali ini kita masih menggunakan data statis untuk mengisi data pada colum `image`.
+Pada saat memasukkan data inputan yang kita terima kedalam database, maka kita perlu mespesifikkan column mana saja yang akan kita inputkan. Pada study case kali ini, kita belum menangani terkait `file upload`. Hal tersebut belum dilakukan karena membutuhkan package tambahan yang nantinya akan kita bahas pada pertemuan Day 7 terkait `PostgreSQL Relation and File Upload in Golang`. Sehingga pada case kali ini kita masih menggunakan data statis untuk mengisi data pada colum `image`.
 
 <img alt="image1" src={useBaseUrl('img/docs/image-5-3.png')} height="400px"/>
 
@@ -55,7 +49,7 @@ Pada saat memasukkan data inputan yang kita terima kedalam database, maka kita p
 <br />
 
 <div>
-<a class="btn-demo" href="https://personal-web-chapter-2.herokuapp.com/add-blog">
+<a class="btn-demo" href="">
 Demo
 </a>
 </div>

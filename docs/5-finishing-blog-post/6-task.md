@@ -1,12 +1,12 @@
 ---
-sidebar_position: 7
+sidebar_position: 6
 ---
 
-# 7. Task
+# 6. Task
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-## 7.1 Instruksi
+## 6.1 Instruksi
 
 Setelah mempelajari dan mengimplementasikan terkait CRUD(Create, Read, Update, Delete) menggunakan query pada function yang telah dibuat, maka tugas kalian adalah mengimplementasikan CRUD fungsi yang berada pada halaman berikut:
 
@@ -32,7 +32,7 @@ Setelah mempelajari dan mengimplementasikan terkait CRUD(Create, Read, Update, D
 
 <img alt="image1" src={useBaseUrl('img/docs/task-5-4.png')} height="75%" width = "75%"/>
 
-## 7.2 Pengumpulan
+## 6.2 Pengumpulan
 
 - Setelah menyelesaikan tugas, silakan push pekerjaan Anda ke repository dengan cara
 - Membuat branch `day-5-impelementation-crud`.
@@ -53,7 +53,7 @@ Referensi:
 
 - [Version Control](https://dumbways-ebook.netlify.app/getting-started/version-control/git-installation)
 
-## 7.3 Deploy to Vercel
+## 6.3 Deploy to Vercel
 
 Setelah melakukan push ke repository, silakan melakukan deploy ke Vercel agar dapat direview
 
@@ -61,7 +61,7 @@ Referensi:
 
 - [Deployment](https://dumbways-ebook.netlify.app/getting-started/deployment/vercel)
 
-## 7.4 Project Management
+## 6.4 Project Management
 
 Tambahkan deskripsi berikut ke dalam kanban pada project management Anda
 
@@ -81,6 +81,6 @@ Referensi:
 - [Creating Github Project](https://dumbways-ebook.netlify.app/getting-started/project-management/membuat-project-managament)
 - [Managing Github Issue](https://dumbways-ebook.netlify.app/getting-started/project-management/issue-dan-status-project)
 
-## 7.5 Diskusi
+## 6.5 Diskusi
 
 Silakan diskusikan terkait kendala atau kesulitan selama pembelajaran pada platform diskusi `(slack/link.ink)` dengan membuat thread, misalnya `"Day 1 Add Project: problem path image"`

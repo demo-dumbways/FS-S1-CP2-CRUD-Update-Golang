@@ -6,73 +6,115 @@ sidebar_position: 2
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-Hal pertama yang kita lakukan adalah menambahkan id blog pada file `blog.hbs` bagian `tag anchor` title. Hal ini bertujuan untuk nantinya pada route detail dapat menerima id blog mana yang akan ditampilkan detailnya.
+Hal pertama yang kita lakukan adalah menambahkan `id` blog pada file `blog.html` bagian `tag anchor` title. Hal ini bertujuan untuk nantinya pada route detail dapat menerima id blog mana yang akan ditampilkan detailnya.
 
-<a class="btn-example-code" href="https://github.com/demo-dumbways/ebook-code-result-chapter-2/blob/day5-1.blog-detail/views/blog.hbs">
+<a class="btn-example-code" href="">
 Contoh code
 </a>
 
 <br />
 <br />
 
-```html title=blog.hbs {12-14}
-
-{{#each blogs}}
-  <div class="blog-list-item">
-    <div class="blog-image">
-      <img src="/public/assets/blog-img.png" alt="Pasar Coding di Indonesia Dinilai Masih Menjanjikan" />
+```html title=blog.html {22}
+<div id="contents" class="blog-list">
+    <!-- conditional post blog -->
+    {{if .Data.IsLogin}}
+    <div class="button-group w-100">
+      <a href="/add-blog" class="btn-post">Add New Blog</a>
     </div>
-    <div class="blog-content">
-      <div class="button-group">
-        <a class="btn-edit">Edit Post</a>
-        <a href="/delete-blog/{{@index}}" class="btn-post">Delete Blog</a>
+    {{end}}
+    <!-- dynamic content would be here -->
+    {{range $index, $data := .Blogs}}
+    <div class="blog-list-item">
+      <div class="blog-image">
+        <img src="/public/assets/blog-img.png" alt="Pasar Coding di Indonesia Dinilai Masih Menjanjikan" />
       </div>
-      <h1>
-        <a href="/blog/{{this.id}}" target="_blank">{{this.title}}</a>
-      </h1>
-      <div class="detail-blog-content">
-        {{this.post_date}} | {{this.author}}
+      <div class="blog-content">
+        {{if $data.IsLogin}}
+        <div class="button-group">
+          <a class="btn-edit">Edit Post</a>
+          <a class="btn-post">Delete Blog</a>
+        </div>
+        {{end}}
+        <h1>
+          <a href="/blog/{{$data.Id}}" target="_blank">
+            {{$data.Title}}
+          </a>
+        </h1>
+        <div class="detail-blog-content">
+          {{$data.Format_date}} | {{$data.Author}}
+        </div>
+        <p>
+          {{$data.Content}}
+        </p>
       </div>
-      <p>{{this.content}}</p>
     </div>
+    {{end}}
   </div>
-{{/each}}
 ```
-Pada pertemuan kedua kita telah membuat sebuah route dengan endpoint `blog/:id` untuk menampilkan detail dari sebauah postingan blog. Hanya saja pada pertemuan tersebut kita masih menggunakan data statis dalam menampilkan detail postingan. Kali ini kita akan menggunakan data yang berasal dari database, lalu menampilkannya berdasarkan `id` menggunakan `query SELECT`.
+Pada pertemuan kedua kita telah membuat sebuah route dengan endpoint `blog/{id}` untuk menampilkan detail dari sebauah postingan blog. Hanya saja pada pertemuan tersebut kita masih menggunakan data statis dalam menampilkan detail postingan. Kali ini kita akan menggunakan data yang berasal dari database, lalu menampilkannya berdasarkan `id` menggunakan `query SELECT`.
 
-<a class="btn-example-code" href="https://github.com/demo-dumbways/ebook-code-result-chapter-2/blob/day5-1.blog-detail/api/index.js">
+<a class="btn-example-code" href="">
 Contoh code
 </a>
 
 <br />
 <br />
 
-```js title=index.js {3-17}
-// this code below endpoint app.get('/blog', ......
+```go title="main.go" {15-25}
+// this code below func blogs(w http.ResponseWriter, r *http.Request) { ..........
 
-app.get('/blog/:id', function (req, res) {
-    const blogId = req.params.id
+func blogDetail(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-    setHeader(res)
-    db.connect((err, client, done) => {
-        if (err) throw err
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
 
-        client.query(`SELECT * FROM blog WHERE id = ${id}`, function (err, result) {
-            done()
-            if (err) throw err
+	var tmpl, err = template.ParseFiles("views/blog-detail.html")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("message : " + err.Error()))
+		return
+	}
 
-            res.render('blog-detail', { isLogin: isLogin, blog: result.rows[0] })
-        })
-    })
-})
+	BlogDetail := Blog{}
+	err = connection.Conn.QueryRow(context.Background(), "SELECT id, title, image, content, post_at FROM blog WHERE id=$1", id).Scan(
+		&BlogDetail.Id, &BlogDetail.Title, &BlogDetail.Image, &BlogDetail.Content, &BlogDetail.Post_date)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("message : " + err.Error()))
+		return
+	}
 
-app.get('/add-blog', function (req, res) {
-    setHeader(res)
-    res.render("form-blog")
-})
+	BlogDetail.Author = "Ilham Fathullah"
+	BlogDetail.Format_date = BlogDetail.Post_date.Format("2 January 2006")
+
+	resp := map[string]interface{}{
+		"Data": Data,
+		"Blog": BlogDetail,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	tmpl.Execute(w, resp)
+}
+
+func formBlog(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	var tmpl, err = template.ParseFiles("views/form-blog.html")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("message : " + err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	tmpl.Execute(w, Data)
+}
+
+// continuation this code same like before
 ```
 
-Mengambil index yang dikirim, kita gunakan `req.params.index`, jadi index tersebut tersimpan didalam `req.params`. Selanjutnya id yang kita dapatkan akan menjadi kondisi pada query yang dijalankan. Kondisi yang dimaksud yakni hanya menampilkan data blog yang id nya sama dengan id yang dikirimkan
+Mengambil id yang dikirim, kita gunakan `mux.Vars(r)["id"]`, jadi id tersebut tersimpan didalam `mux.Vars(r)`. Selanjutnya id yang kita dapatkan akan menjadi kondisi pada query yang dijalankan. Kondisi yang dimaksud yakni hanya menampilkan data blog yang id nya sama dengan id yang dikirimkan
 
 <img alt="image1" src={useBaseUrl('img/docs/image-5-2.png')} height="400px"/>
 
@@ -80,7 +122,7 @@ Mengambil index yang dikirim, kita gunakan `req.params.index`, jadi index terseb
 <br />
 
 <div>
-<a class="btn-demo" href="https://personal-web-chapter-2.herokuapp.com/detail-blog/8">
+<a class="btn-demo" href="">
 Demo
 </a>
 </div>
