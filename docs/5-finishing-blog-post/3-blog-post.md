@@ -8,7 +8,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 Pada pertemuan kedua kita telah membuat sebuah route menggunakan metode `POST` dengan nama endpoint `blog` untuk menyimpan data inputan dari formulir blog. Hanya saja pada pertemuan tersebut kita masih sebatas menyimpan data pada variabel. Kali ini kita akan menyimpan data kedalam database menggunakan `query INSERT`.
 
-<a class="btn-example-code" href="">
+<a class="btn-example-code" href="https://github.com/demo-dumbways/ebook-code-result-chapter-2-golang/blob/day5-2-blog-post/main.go">
 Contoh code
 </a>
 

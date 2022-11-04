@@ -3,9 +3,10 @@ sidebar_position: 5
 ---
 
 # 5. Full Code main.go
+
 Berikut adalah Full Code pada file `main.go` :
 
-<a class="btn-example-code" href="">
+<a class="btn-example-code" href="https://github.com/demo-dumbways/ebook-code-result-chapter-2-golang/blob/day5-4-full-code/main.go">
 Contoh code
 </a>
 
@@ -17,8 +18,8 @@ package main
 
 import (
 	"context"
+	"ebookgolang/connection"
 	"fmt"
-	"golang-c2/connection"
 	"html/template"
 	"log"
 	"net/http"
@@ -30,7 +31,7 @@ import (
 
 var Data = map[string]interface{}{
 	"Title":   "Personal Web",
-	"IsLogin": false,
+	"IsLogin": true,
 }
 
 type Blog struct {
@@ -41,10 +42,7 @@ type Blog struct {
 	Format_date string
 	Author      string
 	Content     string
-    IsLogin     bool
 }
-
-var Blogs = []Blog{}
 
 func main() {
 	route := mux.NewRouter()
@@ -98,7 +96,7 @@ func blogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, _ := connection.Conn.Query(context.Background(), "SELECT id, title, image, content, post_at FROM blog ORDER BY id DESC")
+	rows, _ := connection.Conn.Query(context.Background(), "SELECT id, title, image, content, post_date FROM tb_blog ORDER BY id DESC")
 
 	var result []Blog
 	for rows.Next() {
@@ -112,7 +110,6 @@ func blogs(w http.ResponseWriter, r *http.Request) {
 
 		each.Author = "Ilham Fathullah"
 		each.Format_date = each.Post_date.Format("2 January 2006")
-        each.IsLogin = true
 
 		result = append(result, each)
 	}
@@ -139,7 +136,7 @@ func blogDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	BlogDetail := Blog{}
-	err = connection.Conn.QueryRow(context.Background(), "SELECT id, title, image, content, post_at FROM blog WHERE id=$1", id).Scan(
+	err = connection.Conn.QueryRow(context.Background(), "SELECT id, title, image, content, post_date FROM tb_blog WHERE id=$1", id).Scan(
 		&BlogDetail.Id, &BlogDetail.Title, &BlogDetail.Image, &BlogDetail.Content, &BlogDetail.Post_date)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -182,7 +179,7 @@ func addBlog(w http.ResponseWriter, r *http.Request) {
 	title := r.PostForm.Get("title")
 	content := r.PostForm.Get("content")
 
-	_, err = connection.Conn.Exec(context.Background(), "INSERT INTO blog(title, content,image) VALUES ($1,$2,'image.png')", title, content)
+	_, err = connection.Conn.Exec(context.Background(), "INSERT INTO tb_blog(title, content, image) VALUES ($1,$2,'image.png')", title, content)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("message : " + err.Error()))
@@ -197,7 +194,7 @@ func deleteBlog(w http.ResponseWriter, r *http.Request) {
 
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
 
-	_, err := connection.Conn.Exec(context.Background(), "DELETE FROM blog WHERE id=$1", id)
+	_, err := connection.Conn.Exec(context.Background(), "DELETE FROM tb_blog WHERE id=$1", id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("message : " + err.Error()))
